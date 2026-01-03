@@ -80,6 +80,7 @@ Mandatory conventions for all code. Enforced via ESLint, Prettier, TypeScript st
 - **ESLint**: Enforce code quality (no `any`, no floating promises)
 - **Prettier**: Consistent formatting (80 char width, 2-space tabs)
 - **TypeScript**: Strict mode enabled, explicit return types
+- **No Emoji**: Please do not use any kind of emoji
 
 ---
 
@@ -101,7 +102,7 @@ class ContextEngineError extends Error {
   constructor(
     message: string,
     public readonly code: string,
-    public readonly context?: Record<string, unknown>
+    public readonly context?: Record<string, unknown>,
   ) {
     super(message);
     this.name = "ContextEngineError";
@@ -113,7 +114,7 @@ class TokenBudgetExceededError extends ContextEngineError {
     super(
       `Token budget exceeded: requested ${requested}, available ${available}`,
       "TOKEN_BUDGET_EXCEEDED",
-      { requested, available }
+      { requested, available },
     );
   }
 }
@@ -274,7 +275,7 @@ describe("ContextEngine", () => {
       const engine = new ContextEngine(mockIndexer, mockRetriever);
 
       await expect(engine.query("test", { tokenBudget: -100 })).rejects.toThrow(
-        TokenBudgetExceededError
+        TokenBudgetExceededError,
       );
     });
   });
@@ -309,7 +310,7 @@ function validateUserQuery(query: string): void {
 
   if (query.length > MAX_QUERY_LENGTH) {
     throw new ValidationError(
-      `Query exceeds maximum length of ${MAX_QUERY_LENGTH}`
+      `Query exceeds maximum length of ${MAX_QUERY_LENGTH}`,
     );
   }
 }
@@ -422,7 +423,7 @@ class ContextEngine implements vscode.Disposable {
 
   constructor() {
     this.disposables.push(
-      vscode.workspace.onDidSaveTextDocument(this.handleSave.bind(this))
+      vscode.workspace.onDidSaveTextDocument(this.handleSave.bind(this)),
     );
   }
 

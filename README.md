@@ -1,70 +1,373 @@
-<div align="center">
+# agent-naan
 
-![Continue logo](media/readme.png)
+**VSCode-native AI Assistant with Advanced Context Engine**
 
-</div>
+A Continue.dev fork with Claude 4.5 as the primary LLM, featuring a sophisticated Context Engine that decides what information the model should see based on intent, relevance, and token budgets.
 
-<h1 align="center">Continue</h1>
+## Quick Start
 
-<div align="center">
+### Prerequisites
 
-<a target="_blank" href="https://opensource.org/licenses/Apache-2.0" style="background:none">
-    <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" style="height: 22px;" />
-</a>
-<a target="_blank" href="https://docs.continue.dev" style="background:none">
-    <img src="https://img.shields.io/badge/Continue-docs-%23BE1B55.svg?logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNiAyNCIgZmlsbD0id2hpdGUiPgogIDxwYXRoIGQ9Ik0yMC41Mjg2IDMuMjY4MTFMMTkuMTUxMiA1LjY1Njk0TDIyLjYzMjggMTEuNjg0OUMyMi42NTgyIDExLjczMDYgMjIuNjczNSAxMS43ODY2IDIyLjY3MzUgMTEuODM3NEMyMi42NzM1IDExLjg4ODIgMjIuNjU4MiAxMS45NDQxIDIyLjYzMjggMTEuOTg5OUwxOS4xNTEyIDE4LjAyMjlMMjAuNTI4NiAyMC40MTE3TDI1LjQ3OTEgMTEuODM3NEwyMC41Mjg2IDMuMjYzMDNWMy4yNjgxMVpNMTguNjE3NiA1LjM0NjlMMTkuOTk1IDIuOTU4MDdIMTcuMjQwMkwxNS44NjI4IDUuMzQ2OUgxOC42MjI3SDE4LjYxNzZaTTE1Ljg1NzcgNS45NjY5N0wxOS4wNzUgMTEuNTMyNEgyMS44Mjk4TDE4LjYxNzYgNS45NjY5N0gxNS44NTc3Wk0xOC42MTc2IDE3LjcxNzlMMjEuODI5OCAxMi4xNDc0SDE5LjA3NUwxNS44NTc3IDE3LjcxNzlIMTguNjE3NlpNMTUuODU3NyAxOC4zMzhMMTcuMjM1MSAyMC43MTY3SDE5Ljk4OTlMMTguNjEyNSAxOC4zMzhIMTUuODUyNkgxNS44NTc3Wk02LjUyMDk4IDIxLjMwNjNDNi40NjUwNyAyMS4zMDYzIDYuNDE0MjQgMjEuMjkxIDYuMzY4NSAyMS4yNjU2QzYuMzIyNzYgMjEuMjQwMiA2LjI4MjA5IDIxLjE5OTUgNi4yNTY2OCAyMS4xNTM4TDIuNzcwMDIgMTUuMTIwN0gwLjAxNTI0ODJMNC45NjU3IDIzLjY5SDE0Ljg2MTVMMTMuNDg0MSAyMS4zMDYzSDYuNTI2MDZINi41MjA5OFpNMTQuMDE3OCAyMC45OTYyTDE1LjM5NTIgMjMuMzhMMTYuNzcyNiAyMC45OTExTDE1LjM5NTIgMTguNjAyM0wxNC4wMTc4IDIwLjk5MTFWMjAuOTk2MlpNMTQuODYxNSAxOC4yOTc0SDguNDM3MTJMNy4wNTk3MyAyMC42ODYySDEzLjQ4NDFMMTQuODYxNSAxOC4yOTc0Wk03Ljg5ODM2IDE3Ljk5MjRMNC42ODEwOCAxMi40MjE5TDMuMzAzNjkgMTQuODEwN0w2LjUyMDk4IDIwLjM4MTJMNy44OTgzNiAxNy45OTI0Wk0wLjAxMDE2NTQgMTQuNTAwN0gyLjc2NDk0TDQuMTQyMzIgMTIuMTExOEgxLjM5MjYzTDAuMDEwMTY1NCAxNC41MDA3Wk02LjI0MTQzIDIuNTQxM0M2LjI2Njg1IDIuNDk1NTYgNi4zMDc1MSAyLjQ1NDkgNi4zNTMyNSAyLjQyOTQ4QzYuMzk5IDIuNDA0MDcgNi40NTQ5IDIuMzg4ODIgNi41MDU3MyAyLjM4ODgySDEzLjQ3NEwxNC44NTE0IDBINC45NTA0NUwwIDguNTc0MzVIMi43NTQ3N0w2LjIzMTI3IDIuNTQ2MzhMNi4yNDE0MyAyLjU0MTNaTTQuMTQyMzIgMTEuNTc4MkwyLjc2NDk0IDkuMTg5MzRIMC4wMTAxNjU0TDEuMzg3NTUgMTEuNTc4Mkg0LjE0MjMyWk02LjUxMDgxIDMuMzEzODZMMy4yOTg2MSA4Ljg3OTNMNC42NzU5OSAxMS4yNjgxTDcuODg4MiA1LjcwMjY4TDYuNTEwODEgMy4zMTM4NlpNMTMuNDc5MSAzLjAwMzgySDcuMDQ0NDhMOC40MjE4NyA1LjM5MjY0SDE0Ljg1NjRMMTMuNDc5MSAzLjAwMzgyWk0xNS4zOTUyIDUuMDgyNkwxNi43Njc1IDIuNjk4ODZMMTUuMzk1MiAwLjMxMDAzOEwxNC4wMTc4IDIuNjkzNzhMMTUuMzk1MiA1LjA4MjZaIi8+Cjwvc3ZnPg==" style="height: 22px;" />
-</a>
-<a target="_blank" href="https://changelog.continue.dev" style="background:none">
-    <img src="https://img.shields.io/badge/changelog-%96EFF3" style="height: 22px;" />
-</a>
-<a target="_blank" href="https://discord.gg/vapESyrFmJ" style="background:none">
-    <img src="https://img.shields.io/badge/discord-join-continue.svg?labelColor=191937&color=6F6FF7&logo=discord" style="height: 22px;" />
-</a>
+Before you begin, ensure you have the following installed:
 
-<p></p>
+- **Node.js** 18.x or 20.x ([Download](https://nodejs.org/))
+- **pnpm** 8.x or higher (`npm install -g pnpm`)
+- **Git** ([Download](https://git-scm.com/))
+- **VS Code** (for development and testing)
 
-<div align="center">
+### Installation & Setup
 
-**Ship faster with Continuous AI**
+1. **Clone the repository**
 
-**The future of coding isn't writing more code. It's delegating the boring parts, so you can build the interesting stuff**
+   ```bash
+   git clone https://github.com/chienchuanw/continue-an-agent.git
+   cd continue-an-agent
+   ```
 
-</div>
+2. **Install dependencies**
 
-Get started in [Mission Control](https://hub.continue.dev/hub?type=agents), [CLI (Headless Mode)](https://docs.continue.dev/cli/quick-start#headless-mode), or [CLI (TUI mode)](https://docs.continue.dev/cli/quick-start#tui-mode)
+   ```bash
+   pnpm install
+   ```
 
-### Quick Install
+3. **Set up environment variables**
+
+   Create a `.env` file in the root directory:
+
+   ```bash
+   cp .env.example .env  # if available, or create manually
+   ```
+
+   Add your API keys:
+
+   ```env
+   ANTHROPIC_API_KEY=your_api_key_here
+   ```
+
+4. **Verify the setup**
+
+   ```bash
+   pnpm format:check
+   ```
+
+## Building the Project
+
+### Development Mode
+
+For active development with watch mode:
 
 ```bash
-npm i -g @continuedev/cli
-cn
+# Watch TypeScript compilation for all modules
+pnpm tsc:watch
 ```
 
-## Cloud Agents
+This will watch and compile:
 
-Set workflows to run automatically on [PR opens](https://docs.continue.dev/guides/continuous-ai#pattern-2-the-pr-review-agent), [schedules](https://docs.continue.dev/guides/continuous-ai#pattern-1-the-async-triage-bot), or [any event trigger](https://docs.continue.dev/cli/quick-start#headless-mode)
+- GUI (`gui/`)
+- VS Code Extension (`extensions/vscode/`)
+- Core Engine (`core/`)
+- Binary (`binary/`)
 
-![Cloud Agents](docs/images/background-agent.gif)
+### Production Build
 
-## CLI Agents
+To create a production-ready build:
 
-Watch workflows execute in real-time and approve decisions step-by-step from your [terminal](https://docs.continue.dev/cli/quick-start#tui-mode)
+```bash
+# Build all modules
+pnpm build
+```
 
-![CLI Agents](docs/images/cli-agent.gif)
+### Code Quality
 
-## IDE Agents
+Before committing, ensure code quality:
 
-Trigger workflows from [VS Code](https://marketplace.visualstudio.com/items?itemName=Continue.continue) or [JetBrains](https://plugins.jetbrains.com/plugin/22707-continue-extension)—let agents handle the refactoring while you keep coding
+```bash
+# Format code
+pnpm format
 
-![IDE Agents](docs/images/agent.gif)
+# Check formatting
+pnpm format:check
 
-</div>
+# Run linter
+pnpm lint
+```
+
+## Building and Running the VSCode Extension
+
+### Prerequisites for Extension Development
+
+- VS Code installed on your machine
+- All project dependencies installed (`pnpm install`)
+- Node.js 18.x or 20.x
+
+### Build the Extension
+
+1. **Build the extension code**
+
+   ```bash
+   # Navigate to the VSCode extension directory
+   cd extensions/vscode
+
+   # Install extension-specific dependencies
+   pnpm install
+
+   # Build the extension
+   pnpm build
+   ```
+
+2. **Watch mode for development** (recommended)
+
+   ```bash
+   # From the root directory, watch all modules including the extension
+   pnpm tsc:watch
+
+   # Or from the extension directory specifically
+   cd extensions/vscode
+   pnpm watch
+   ```
+
+### Run the Extension Locally
+
+1. **Open the extension in VS Code**
+
+   ```bash
+   # From the extensions/vscode directory
+   code .
+   ```
+
+2. **Launch the Extension Development Host**
+
+   - Press `F5` in VS Code, or
+   - Go to Run menu > Start Debugging, or
+   - Use the keyboard shortcut `Ctrl+F5` (Windows/Linux) or `Cmd+F5` (macOS)
+
+   This will open a new VS Code window with the extension loaded.
+
+3. **Test the extension**
+
+   - The extension will be active in the new window
+   - Open any project folder to test the extension functionality
+   - Use the VS Code Developer Tools to debug:
+     - Press `Ctrl+Shift+I` (Windows/Linux) or `Cmd+Shift+I` (macOS) to open DevTools
+     - Check the Console tab for any errors or logs
+
+### Package the Extension
+
+To create a distributable `.vsix` file:
+
+```bash
+# Install vsce (VS Code Extension CLI) globally if not already installed
+npm install -g @vscode/vsce
+
+# Navigate to the extension directory
+cd extensions/vscode
+
+# Package the extension
+vsce package
+```
+
+This will create a `.vsix` file in the `extensions/vscode` directory.
+
+### Install the Extension Locally
+
+To install the packaged extension in your local VS Code:
+
+```bash
+# Using the VS Code CLI
+code --install-extension agent-naan-0.0.1.vsix
+
+# Or manually:
+# 1. Open VS Code
+# 2. Go to Extensions (Ctrl+Shift+X / Cmd+Shift+X)
+# 3. Click the "..." menu at the top
+# 4. Select "Install from VSIX..."
+# 5. Choose the .vsix file
+```
+
+### Debugging the Extension
+
+1. **Set breakpoints** in the extension code (in the VS Code editor)
+2. **Open the Debug Console** in the Extension Development Host window
+3. **Reload the extension** by pressing `Ctrl+R` (Windows/Linux) or `Cmd+R` (macOS) in the Extension Development Host
+4. **Trigger the extension** to hit your breakpoints
+
+### Common Extension Development Tasks
+
+**Rebuild after changes:**
+
+```bash
+# If using watch mode, changes are compiled automatically
+# Otherwise, rebuild manually:
+cd extensions/vscode
+pnpm build
+```
+
+**Clear extension cache:**
+
+```bash
+# If the extension behaves unexpectedly, clear the cache
+rm -rf extensions/vscode/out
+pnpm build
+```
+
+**View extension logs:**
+
+- Open the Extension Development Host window
+- Go to View > Output
+- Select "agent-naan" from the dropdown to see extension logs
+
+### Troubleshooting Extension Issues
+
+**Extension not loading:**
+
+- Check the Output panel for error messages
+- Verify all dependencies are installed: `pnpm install`
+- Rebuild the extension: `pnpm build`
+- Restart the Extension Development Host (press `Ctrl+R` / `Cmd+R`)
+
+**TypeScript errors in extension:**
+
+```bash
+# Check for type errors
+cd extensions/vscode
+pnpm tsc --noEmit
+```
+
+**Port conflicts:**
+
+If the extension uses a local server, ensure the port is not in use:
+
+```bash
+# macOS/Linux: Find process using port 3000
+lsof -i :3000
+
+# Windows: Find process using port 3000
+netstat -ano | findstr :3000
+```
+
+## Project Structure
+
+```text
+agent-naan/
+├── core/                 # Core Engine (editor-agnostic)
+│   ├── context/         # Context Engine (retrieval, ranking, packing)
+│   ├── llm/             # LLM abstraction layer
+│   ├── agent/           # Agent runtime
+│   └── prompt/          # Prompt assembly
+├── extensions/
+│   ├── vscode/          # VS Code extension
+│   └── intellij/        # JetBrains extension
+├── gui/                 # Web UI components
+├── binary/              # CLI binary
+├── packages/            # Shared packages
+├── docs/                # Documentation
+└── .augment/            # Augment Code rules & guidelines
+    └── rules/
+        ├── coding-standards.md
+        ├── project-guidelines.md
+        └── workflow.md
+```
+
+## Testing
+
+Run tests to ensure everything works:
+
+```bash
+# Run all tests
+pnpm test
+
+# Run tests in watch mode
+pnpm test:watch
+
+# Generate coverage report
+pnpm test:coverage
+```
+
+## Documentation
+
+- **[CLAUDE.md](./CLAUDE.md)** - Architecture and design guidance
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)** - Contribution guidelines
+- **[docs/architecture.md](./docs/architecture.md)** - System architecture
+- **[docs/context-engine.md](./docs/context-engine.md)** - Context Engine specification
+- **[.augment/rules/](./augment/rules/)** - Coding standards and guidelines
+
+## Development Workflow
+
+### Creating a Feature Branch
+
+```bash
+git checkout -b feat/your-feature-name
+```
+
+### Making Changes
+
+1. Make your code changes
+2. Run formatting: `pnpm format`
+3. Run type checking: `pnpm tsc:watch`
+4. Run tests: `pnpm test`
+5. Commit with conventional commits: `git commit -m "feat(scope): description"`
+
+### Pushing Changes
+
+```bash
+git push origin feat/your-feature-name
+```
+
+Then create a Pull Request on GitHub.
+
+## Troubleshooting
+
+### Dependencies not installing
+
+```bash
+# Clear cache and reinstall
+rm -rf node_modules pnpm-lock.yaml
+pnpm install
+```
+
+### TypeScript errors
+
+```bash
+# Check for type errors
+pnpm tsc:watch
+
+# Fix formatting issues
+pnpm format
+```
+
+### Port already in use
+
+If you encounter port conflicts, check which process is using the port and terminate it, or modify the port configuration in the respective module's config file.
 
 ## Contributing
 
-Read the [contributing guide](https://github.com/continuedev/continue/blob/main/CONTRIBUTING.md), and
-join [#contribute on Discord](https://discord.gg/vapESyrFmJ).
+We welcome contributions! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## Key Features
+
+- **Context Engine** - Intelligent retrieval system that decides what information the model should see
+- **VSCode Integration** - Native VS Code extension for seamless IDE integration
+- **Claude 4.5** - Advanced LLM with superior reasoning capabilities
+- **Modular Architecture** - Strict separation of concerns with clear module boundaries
+- **Human-in-the-Loop** - All file mutations require explicit user approval
+
+## Project Goals
+
+- Match or exceed Augment Code in context relevance and suggestion precision
+- Provide a non-intrusive UX integrated directly into VS Code
+- Maintain strict architectural boundaries for reliability and maintainability
+- Enable human-controlled AI assistance with predictable behavior
+
+</div>
 
 ## License
 
 [Apache 2.0 © 2023-2024 Continue Dev, Inc.](./LICENSE)
+
+## Community
+
+- **Discord**: [Join our community](https://discord.gg/vapESyrFmJ)
+- **Issues**: [Report bugs or request features](https://github.com/chienchuanw/continue-an-agent/issues)
+- **Discussions**: [Ask questions and share ideas](https://github.com/chienchuanw/continue-an-agent/discussions)
+
+---
