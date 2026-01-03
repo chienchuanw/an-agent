@@ -93,15 +93,15 @@ All future providers (OpenAI / Gemini) must conform to this interface.
 
 ## 3. Development Phases Overview
 
-| Phase   | Focus                             |
-| ------- | --------------------------------- |
-| Phase 0 | Fork stabilization & infra        |
-| Phase 1 | Claude chat & inline completion   |
-| Phase 2 | Context Engine v1                 |
-| Phase 3 | Error explanation & docs          |
-| Phase 4 | Agent tools (controlled)          |
-| Phase 5 | Context Engine v2 (Augment-class) |
-| Phase 6 | UX, performance, reliability      |
+| Phase   | Focus                             | Status      |
+| ------- | --------------------------------- | ----------- |
+| Phase 0 | Fork stabilization & infra        | ✅ COMPLETE |
+| Phase 1 | Claude chat & inline completion   | 🔲 TODO     |
+| Phase 2 | Context Engine v1 (Augment-class) | 🚧 ACTIVE   |
+| Phase 3 | Error explanation & docs          | 🔲 TODO     |
+| Phase 4 | Agent tools (controlled)          | 🔲 TODO     |
+| Phase 5 | Context Engine v2 (Advanced)      | 🔲 TODO     |
+| Phase 6 | UX, performance, reliability      | 🔲 TODO     |
 
 ---
 
@@ -171,40 +171,61 @@ All future providers (OpenAI / Gemini) must conform to this interface.
 
 ---
 
-## Phase 2 – Context Engine v1 (Functional)
+## Phase 2 – Context Engine v1 (Augment-Class Implementation)
 
 ### Objective
 
-Move beyond single-file context.
+實作獨立的 Context Engine，達到 Augment Code 等級的 context 理解能力。
 
-### 2.1 Indexing
+**詳細實作計劃**: 見 `docs/phases/context-engine-implementation.md`
 
-#### Indexed Data
+### 2.1 Real-time Codebase Indexing
 
-- File content
-- Symbols (AST)
-- Import / dependency graph
-- Git metadata (recency)
+- [ ] 建立 Context Engine 模組結構
+- [ ] 實作 File Watcher（監聽檔案變更）
+- [ ] 實作 Incremental Indexer（增量索引）
+- [ ] 整合 LanceDB 向量儲存
+- [ ] 實作本地 Embedding Provider
+- [ ] 建立 SQLite metadata 儲存
+
+### 2.2 Intent-aware Retrieval
+
+- [ ] 定義 Intent 類型（explain, bug_fix, refactor, generate, test）
+- [ ] 實作 Rule-based Intent Classifier
+- [ ] 設計 Retrieval Strategy Selector
+- [ ] 整合意圖分類到檢索流程
+
+### 2.3 Multi-method Retrieval Fusion
+
+- [ ] 實作 Semantic Retriever（向量搜尋）
+- [ ] 實作 Lexical Retriever（全文搜尋）
+- [ ] 實作 Dependency Walker（依賴圖走訪）
+- [ ] 實作 Recent Edits Retriever
+- [ ] 建立 Candidate Fusion 邏輯
+- [ ] 實作 Ranker（排序與評分）
+
+### 2.4 Token Budget Optimization
+
+- [ ] 實作 Token Counter
+- [ ] 設計 Budget Allocator
+- [ ] 實作 Prompt Packer
+- [ ] 建立 Truncation 策略
+- [ ] 整合到 Prompt Assembly 流程
 
 ---
 
-### 2.2 Embedding Pipeline
-
-- Chunking at function / class level
-- Incremental updates on save
-- Background indexing
-
----
-
-### 2.3 Context Query API
+### Context Query API
 
 ```ts
-ContextEngine.query({
-  intent,
-  activeFile,
-  selection,
-  tokenBudget,
-});
+interface ContextQuery {
+  intent: IntentType;
+  input: string;
+  activeFile?: string;
+  selection?: string;
+  tokenBudget: number;
+}
+
+ContextEngine.query(query: ContextQuery): Promise<ContextResult>;
 ```
 
 ---
@@ -243,11 +264,14 @@ interface AgentTool {
 
 ---
 
-## Phase 5 – Context Engine v2 (Augment-Class)
+## Phase 5 – Context Engine v2 (Advanced Features)
 
-- Intent-aware retrieval
-- Advanced ranking
-- Deterministic prompt packing
+Context Engine v1 已在 Phase 2 實作。Phase 5 專注於進階功能：
+
+- ML-based Intent Classifier（取代 rule-based）
+- Semantic Caching（語意快取）
+- Cross-repository Context（跨專案 context）
+- Learning from User Feedback（從用戶反饋學習）
 
 ---
 
