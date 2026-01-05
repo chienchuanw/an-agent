@@ -311,12 +311,14 @@ export const streamNormalInput = createAsyncThunk<
     }
     const generatedCalls3 = selectPendingToolCalls(state3);
     const toolPolicies = state3.ui.toolSettings;
+    const isAutoMode = state3.session.isAutoMode; // Read Auto Mode state from Redux
     const policies = await evaluateToolPolicies(
       dispatch,
       extra.ideMessenger,
       activeTools,
       generatedCalls3,
       toolPolicies,
+      isAutoMode,
     );
     const autoApprovedPolicies = policies.filter(
       ({ policy }) => policy === "allowedWithoutPermission",

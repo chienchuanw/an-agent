@@ -1,6 +1,7 @@
 import { ToolPolicy } from "@continuedev/terminal-security";
 import { Tool, ToolCallState } from "core";
 import { IIdeMessenger } from "../../context/IdeMessenger";
+import { isDangerousCommand } from "../../util/dangerousCommands";
 import { isEditTool } from "../../util/toolCallState";
 import { errorToolCall, updateToolCallOutput } from "../slices/sessionSlice";
 import { DEFAULT_TOOL_SETTING, ToolPolicies } from "../slices/uiSlice";
@@ -15,12 +16,20 @@ interface EvaluatedPolicy {
 /**
  * Evaluates the tool policy for a tool call, including dynamic policy evaluation
  * Note that tool group policies are not considered here because activeTools already excludes disabled groups
+ *
+ * @param ideMessenger - IDE messenger for communication with core
+ * @param activeTools - List of active tools
+ * @param toolCallState - The tool call state to evaluate
+ * @param toolPolicies - User-defined tool policies
+ * @param isAutoMode - Whether Auto Mode is enabled
+ * @returns Evaluated policy result
  */
 async function evaluateToolPolicy(
   ideMessenger: IIdeMessenger,
   activeTools: Tool[],
   toolCallState: ToolCallState,
   toolPolicies: ToolPolicies,
+  isAutoMode: boolean,
 ): Promise<EvaluatedPolicy> {
   // allow edit tool calls without permission
   if (isEditTool(toolCallState.toolCall.function.name)) {
@@ -48,7 +57,7 @@ async function evaluateToolPolicy(
     return { policy: "disabled", toolCallState };
   }
 
-  const dynamicPolicy = result.content.policy;
+  let dynamicPolicy = result.content.policy;
   const displayValue = result.content.displayValue;
 
   // Ensure dynamic policy cannot be more lenient than base policy
@@ -56,7 +65,30 @@ async function evaluateToolPolicy(
   if (basePolicy === "disabled") {
     return { policy: "disabled", displayValue, toolCallState }; // Cannot override disabled
   }
+
+  // Auto Mode logic: convert allowedWithPermission to allowedWithoutPermission
+  // EXCEPT for dangerous commands which still require confirmation
+  if (isAutoMode && dynamicPolicy === "allowedWithPermission") {
+    // Check if this is a dangerous Bash command
+    if (
+      toolName === "runTerminalCommand" &&
+      toolCallState.parsedArgs?.command
+    ) {
+      const command = String(toolCallState.parsedArgs.command);
+      if (isDangerousCommand(command)) {
+        // Dangerous commands still require confirmation even in Auto Mode
+        return { policy: "allowedWithPermission", displayValue, toolCallState };
+      }
+    }
+
+    // Non-dangerous tools in Auto Mode: auto-approve
+    dynamicPolicy = "allowedWithoutPermission";
+  }
+
+  // After Auto Mode processing, ensure dynamic policy cannot be more lenient than base policy
+  // (unless Auto Mode explicitly allowed it)
   if (
+    !isAutoMode &&
     basePolicy === "allowedWithPermission" &&
     dynamicPolicy === "allowedWithoutPermission"
   ) {
@@ -77,6 +109,7 @@ export async function evaluateToolPolicies(
   activeTools: Tool[],
   generatedToolCalls: ToolCallState[],
   toolPolicies: ToolPolicies,
+  isAutoMode: boolean,
 ): Promise<EvaluatedPolicy[]> {
   // Check if ALL tool calls are auto-approved using dynamic evaluation
   const policyResults = await Promise.all(
@@ -86,6 +119,7 @@ export async function evaluateToolPolicies(
         activeTools,
         toolCallState,
         toolPolicies,
+        isAutoMode,
       ),
     ),
   );

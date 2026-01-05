@@ -26,7 +26,7 @@ const AutoModeToggle: React.FC = () => {
 
   return (
     <ToolTip
-      content="Auto Mode: 自動執行大部分工具，但危險指令仍需確認"
+      content="Auto Mode: Allow agent to execute tools automatically"
       place="top"
     >
       <div
