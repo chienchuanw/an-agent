@@ -259,7 +259,7 @@ const StreamErrorDialog = ({ error }: StreamErrorProps) => {
             defaultOpen
           >
             <div className="flex flex-col gap-0 rounded-sm">
-              <code className="bg-editor-background text-editor-foreground block max-h-48 overflow-y-auto rounded border border-solid border-[var(--vscode-panel-border)] p-3 font-mono text-xs">
+              <code className="text-foreground bg-editor block max-h-48 overflow-y-auto rounded border border-solid border-[var(--vscode-panel-border)] p-3 font-mono text-xs">
                 {parsedError}
               </code>
 

@@ -36,7 +36,7 @@ const AnsiSpan = styled.span<{
       case "bold":
         return "font-weight: bold;";
       case "dim":
-        return "opacity: 0.5;";
+        return "opacity: 0.75;";
       case "italic":
         return "font-style: italic;";
       case "hidden":
@@ -93,6 +93,7 @@ const TerminalContent = styled.div`
     overflow-y: hidden;
     padding: 8px;
     margin: 0;
+    color: var(--foreground);
   }
 
   code {
@@ -102,6 +103,7 @@ const TerminalContent = styled.div`
     word-wrap: break-word;
     border-radius: 0.5rem;
     background-color: var(--editor-background);
+    color: var(--foreground);
     font-size: ${getFontSize() - 2}px;
     font-family:
       ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono",
