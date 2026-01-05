@@ -25,13 +25,29 @@ Planning mode that **completely overrides all user permissions** to enforce read
 
 ### `auto`
 
-Auto mode that **completely overrides all user permissions** to allow everything without asking. This mode provides maximum automation by bypassing all permission policies and restrictions, regardless of user configuration.
+Auto mode that allows most tools without asking, while still protecting against dangerous commands. This mode provides efficient automation while maintaining safety for destructive operations.
 
 - **Command-line flag:** `--auto` (starts in auto mode)
 - **UI Indicator:** `[auto]` shown in green
 - **Current directory:** Hidden to save space and focus on automation
-- **Permission override:** **Absolute** - allows all tools with `*: allow` policy
-- **User config ignored:** Any user `--exclude` flags are overridden - everything is allowed
+- **Permission behavior:**
+  - Most tools are automatically allowed without confirmation
+  - **Dangerous Bash commands still require confirmation** (see below)
+  - User-defined `exclude` policies are respected
+- **Safety protection:** Even in auto mode, dangerous commands require user confirmation
+
+#### Dangerous Command Protection
+
+The following types of Bash commands always require confirmation, even in auto mode:
+
+- **Recursive deletion:** `rm -rf *`, `rm -r *`
+- **Privilege escalation:** `sudo *`
+- **Dangerous permissions:** `chmod 777 *`, `chmod -R 777 *`
+- **Shell execution:** `eval *`, `exec *`
+- **System modification:** `mkfs *`, `dd *`, `fdisk *`, `format *`
+- **Download and execute:** `curl * | sh`, `wget * | bash`
+
+This ensures that auto mode remains safe while still providing efficient automation for regular development tasks.
 
 ## Usage
 

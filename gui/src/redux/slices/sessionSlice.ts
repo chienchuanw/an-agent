@@ -223,6 +223,13 @@ type SessionState = {
   contextPercentage?: number;
   inlineErrorMessage?: InlineErrorMessageType;
   compactionLoading: Record<number, boolean>; // Track compaction loading by message index
+  /**
+   * Auto Mode 狀態
+   *
+   * 當啟用 Auto Mode 時，大部分工具會自動執行而不需要使用者確認，
+   * 但危險指令（如 rm -rf, sudo 等）仍會要求確認。
+   */
+  isAutoMode: boolean;
 };
 
 export const INITIAL_SESSION_STATE: SessionState = {
@@ -243,6 +250,7 @@ export const INITIAL_SESSION_STATE: SessionState = {
   lastSessionId: undefined,
   newestToolbarPreviewForInput: {},
   compactionLoading: {},
+  isAutoMode: false,
 };
 
 export const sessionSlice = createSlice({
@@ -687,6 +695,8 @@ export const sessionSlice = createSlice({
       state.inlineErrorMessage = undefined;
       state.isPruned = false;
       state.contextPercentage = undefined;
+      // 重設 Auto Mode 為預設值（關閉）
+      state.isAutoMode = false;
 
       if (payload) {
         state.history = payload.history as any;
@@ -993,6 +1003,15 @@ export const sessionSlice = createSlice({
     setContextPercentage: (state, action: PayloadAction<number>) => {
       state.contextPercentage = action.payload;
     },
+    /**
+     * 設定 Auto Mode 狀態
+     *
+     * 當 Auto Mode 啟用時，大部分工具會自動執行而不需要使用者確認，
+     * 但危險指令（如 rm -rf, sudo 等）仍會要求確認。
+     */
+    setAutoMode: (state, action: PayloadAction<boolean>) => {
+      state.isAutoMode = action.payload;
+    },
   },
   selectors: {
     selectIsGatheringContext: (state) => {
@@ -1082,6 +1101,7 @@ export const {
   setIsPruned,
   setContextPercentage,
   setCompactionLoading,
+  setAutoMode,
 } = sessionSlice.actions;
 
 export const { selectIsGatheringContext } = sessionSlice.selectors;

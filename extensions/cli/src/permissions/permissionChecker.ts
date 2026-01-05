@@ -2,6 +2,7 @@ import type { ToolPolicy } from "@continuedev/terminal-security";
 
 import { ALL_BUILT_IN_TOOLS } from "src/tools/allBuiltIns.js";
 
+import { isDangerousCommand } from "./defaultPolicies.js";
 import {
   PermissionCheckResult,
   PermissionPolicy,
@@ -177,5 +178,63 @@ export function checkToolPermission(
   return {
     permission: basePermission,
     matchedPolicy,
+  };
+}
+
+/**
+ * 檢查工具權限，支援 Auto Mode
+ *
+ * 當 isAutoMode 為 true 時：
+ * - 大部分工具會自動允許執行
+ * - 危險指令（如 rm -rf, sudo 等）仍會要求使用者確認
+ * - 被 exclude 的工具仍會被排除
+ *
+ * 當 isAutoMode 為 false 時：
+ * - 使用一般的權限檢查流程
+ *
+ * @param toolCall - 工具呼叫請求
+ * @param permissions - 權限政策配置
+ * @param isAutoMode - 是否啟用 Auto Mode
+ * @returns 權限檢查結果
+ */
+export function checkToolPermissionWithAutoMode(
+  toolCall: ToolCallRequest,
+  permissions: ToolPermissions,
+  isAutoMode: boolean,
+): PermissionCheckResult {
+  // 先執行標準的權限檢查
+  const baseResult = checkToolPermission(toolCall, permissions);
+
+  // 如果 Auto Mode 未啟用，直接返回標準結果
+  if (!isAutoMode) {
+    return baseResult;
+  }
+
+  // 檢查使用者是否有明確設定 exclude 政策（需要區分使用者設定和系統預設）
+  // 如果 matchedPolicy 存在且明確設定為 exclude，則遵循使用者設定
+  if (
+    baseResult.matchedPolicy &&
+    baseResult.matchedPolicy.permission === "exclude"
+  ) {
+    return baseResult;
+  }
+
+  // 在 Auto Mode 下，檢查是否為 Bash 工具的危險指令
+  // 危險指令應該要求確認，而不是直接 exclude
+  if (toolCall.name === "Bash" && toolCall.arguments?.command) {
+    const command = String(toolCall.arguments.command);
+    if (isDangerousCommand(command)) {
+      // 危險指令即使在 Auto Mode 下也要求確認
+      return {
+        permission: "ask",
+        matchedPolicy: baseResult.matchedPolicy,
+      };
+    }
+  }
+
+  // Auto Mode 下，非危險指令自動允許
+  return {
+    permission: "allow",
+    matchedPolicy: baseResult.matchedPolicy,
   };
 }

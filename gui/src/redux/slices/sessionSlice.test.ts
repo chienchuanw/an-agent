@@ -3,7 +3,11 @@ import { renderChatMessage } from "core/util/messageContent";
 import { v4 as uuidv4 } from "uuid";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { addToolCallDeltaToState } from "../../util/toolCallState";
-import { ChatHistoryItemWithMessageId, sessionSlice } from "./sessionSlice";
+import {
+  ChatHistoryItemWithMessageId,
+  INITIAL_SESSION_STATE,
+  sessionSlice,
+} from "./sessionSlice";
 
 // Mock dependencies
 vi.mock("uuid");
@@ -76,6 +80,7 @@ describe("sessionSlice streamUpdate", () => {
     newestToolbarPreviewForInput: {},
     isSessionMetadataLoading: false,
     compactionLoading: {},
+    isAutoMode: false,
   });
 
   describe("Basic Chat Message", () => {
@@ -449,6 +454,72 @@ describe("sessionSlice streamUpdate", () => {
       expect(newState.history).toHaveLength(2);
       expect(newState.history[1].message.role).toBe("assistant");
       expect(newState.history[1].toolCallStates).toHaveLength(1);
+    });
+  });
+});
+
+/**
+ * Auto Mode 狀態測試
+ *
+ * Auto Mode 是一個特殊模式，當啟用時會自動允許大部分工具執行，
+ * 但對於危險指令仍會要求使用者確認。
+ */
+describe("sessionSlice Auto Mode", () => {
+  describe("isAutoMode 狀態", () => {
+    it("should have isAutoMode defaulted to false in initial state", () => {
+      // 驗證初始狀態中 isAutoMode 預設為 false
+      expect(INITIAL_SESSION_STATE.isAutoMode).toBe(false);
+    });
+
+    it("should set isAutoMode to true with setAutoMode action", () => {
+      const initialState = {
+        ...INITIAL_SESSION_STATE,
+        streamAborter: new AbortController(),
+      };
+
+      const action = {
+        type: "session/setAutoMode",
+        payload: true,
+      };
+
+      const newState = sessionSlice.reducer(initialState, action);
+
+      expect(newState.isAutoMode).toBe(true);
+    });
+
+    it("should set isAutoMode to false with setAutoMode action", () => {
+      const initialState = {
+        ...INITIAL_SESSION_STATE,
+        streamAborter: new AbortController(),
+        isAutoMode: true,
+      };
+
+      const action = {
+        type: "session/setAutoMode",
+        payload: false,
+      };
+
+      const newState = sessionSlice.reducer(initialState, action);
+
+      expect(newState.isAutoMode).toBe(false);
+    });
+
+    it("should preserve isAutoMode when creating new session without payload", () => {
+      const initialState = {
+        ...INITIAL_SESSION_STATE,
+        streamAborter: new AbortController(),
+        isAutoMode: true,
+      };
+
+      const action = {
+        type: "session/newSession",
+        payload: undefined,
+      };
+
+      const newState = sessionSlice.reducer(initialState, action);
+
+      // 新建 session 時應該重設為 false（預設值）
+      expect(newState.isAutoMode).toBe(false);
     });
   });
 });

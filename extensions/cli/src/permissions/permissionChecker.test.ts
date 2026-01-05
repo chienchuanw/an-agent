@@ -4,6 +4,7 @@ import { ALL_BUILT_IN_TOOLS } from "src/tools/allBuiltIns.js";
 
 import {
   checkToolPermission,
+  checkToolPermissionWithAutoMode,
   matchesArguments,
   matchesToolPattern,
 } from "./permissionChecker.js";
@@ -880,6 +881,97 @@ describe("Permission Checker", () => {
 
         expect(result.matchedPolicy).toBe(policy);
       });
+    });
+  });
+});
+
+/**
+ * Auto Mode 權限測試
+ *
+ * 測試 checkToolPermissionWithAutoMode 函數在 Auto Mode 下的行為：
+ * - 一般工具在 Auto Mode 下應該自動允許
+ * - 危險指令即使在 Auto Mode 下也應該要求確認
+ */
+describe("Auto Mode Permission Logic", () => {
+  beforeEach(() => {
+    mockEvaluateToolCallPolicy.mockClear();
+  });
+
+  describe("checkToolPermissionWithAutoMode", () => {
+    it("should auto-allow safe tools when isAutoMode is true", () => {
+      const result = checkToolPermissionWithAutoMode(
+        { name: "Read", arguments: { path: "/test.txt" } },
+        { policies: [] },
+        true, // isAutoMode
+      );
+
+      expect(result.permission).toBe("allow");
+    });
+
+    it("should auto-allow write tools when isAutoMode is true", () => {
+      const result = checkToolPermissionWithAutoMode(
+        { name: "Write", arguments: { path: "/test.txt", content: "test" } },
+        { policies: [] },
+        true, // isAutoMode
+      );
+
+      expect(result.permission).toBe("allow");
+    });
+
+    it("should still ask for dangerous Bash commands when isAutoMode is true", () => {
+      mockEvaluateToolCallPolicy.mockReturnValue("allowedWithoutPermission");
+
+      const result = checkToolPermissionWithAutoMode(
+        { name: "Bash", arguments: { command: "rm -rf /" } },
+        { policies: [] },
+        true, // isAutoMode
+      );
+
+      expect(result.permission).toBe("ask");
+    });
+
+    it("should still ask for sudo commands when isAutoMode is true", () => {
+      mockEvaluateToolCallPolicy.mockReturnValue("allowedWithoutPermission");
+
+      const result = checkToolPermissionWithAutoMode(
+        { name: "Bash", arguments: { command: "sudo apt install" } },
+        { policies: [] },
+        true, // isAutoMode
+      );
+
+      expect(result.permission).toBe("ask");
+    });
+
+    it("should auto-allow safe Bash commands when isAutoMode is true", () => {
+      mockEvaluateToolCallPolicy.mockReturnValue("allowedWithoutPermission");
+
+      const result = checkToolPermissionWithAutoMode(
+        { name: "Bash", arguments: { command: "ls -la" } },
+        { policies: [] },
+        true, // isAutoMode
+      );
+
+      expect(result.permission).toBe("allow");
+    });
+
+    it("should use normal permission flow when isAutoMode is false", () => {
+      const result = checkToolPermissionWithAutoMode(
+        { name: "Write", arguments: { path: "/test.txt", content: "test" } },
+        { policies: [{ tool: "Write", permission: "ask" }] },
+        false, // isAutoMode is false
+      );
+
+      expect(result.permission).toBe("ask");
+    });
+
+    it("should respect exclude policies even when isAutoMode is true", () => {
+      const result = checkToolPermissionWithAutoMode(
+        { name: "DangerousTool", arguments: {} },
+        { policies: [{ tool: "DangerousTool", permission: "exclude" }] },
+        true, // isAutoMode
+      );
+
+      expect(result.permission).toBe("exclude");
     });
   });
 });

@@ -35,6 +35,29 @@ When the AI tries to use a tool with "ask" permission, the system will:
 
 Tools with "allow" permission are executed immediately without user intervention.
 
+### 4. Auto Mode
+
+Auto Mode is a special mode that allows most tools to execute automatically without confirmation. This is useful for efficient automation workflows. However, dangerous commands are always protected:
+
+**Enabled via:** UI toggle button in Agent mode, or `--auto` command line flag
+
+**Behavior:**
+
+- Most tools are automatically allowed
+- Dangerous Bash commands still require confirmation
+- User-defined `exclude` policies are still respected
+
+**Protected dangerous commands include:**
+
+- `rm -rf *` - Recursive deletion
+- `sudo *` - Privilege escalation
+- `chmod 777 *` - Dangerous permissions
+- `eval *`, `exec *` - Shell execution
+- `mkfs *`, `dd *` - System modification
+- `curl * | sh`, `wget * | bash` - Download and execute
+
+See `extensions/cli/spec/modes.md` for complete documentation.
+
 ## Architecture
 
 ### Core Components
