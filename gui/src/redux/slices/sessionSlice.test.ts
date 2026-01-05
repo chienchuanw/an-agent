@@ -466,9 +466,10 @@ describe("sessionSlice streamUpdate", () => {
  */
 describe("sessionSlice Auto Mode", () => {
   describe("isAutoMode 狀態", () => {
-    it("should have isAutoMode defaulted to false in initial state", () => {
-      // 驗證初始狀態中 isAutoMode 預設為 false
-      expect(INITIAL_SESSION_STATE.isAutoMode).toBe(false);
+    it("should have isAutoMode read from localStorage in initial state", () => {
+      // 驗證初始狀態中 isAutoMode 會從 localStorage 讀取
+      // 如果 localStorage 中沒有值，預設為 false
+      expect(typeof INITIAL_SESSION_STATE.isAutoMode).toBe("boolean");
     });
 
     it("should set isAutoMode to true with setAutoMode action", () => {
@@ -518,8 +519,8 @@ describe("sessionSlice Auto Mode", () => {
 
       const newState = sessionSlice.reducer(initialState, action);
 
-      // 新建 session 時應該重設為 false（預設值）
-      expect(newState.isAutoMode).toBe(false);
+      // 新建 session 時應該保持使用者的 Auto Mode 偏好設定
+      expect(newState.isAutoMode).toBe(true);
     });
   });
 });

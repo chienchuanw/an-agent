@@ -232,6 +232,17 @@ type SessionState = {
   isAutoMode: boolean;
 };
 
+// 從 localStorage 讀取 Auto Mode 偏好設定
+const getInitialAutoMode = (): boolean => {
+  try {
+    const saved = localStorage.getItem("autoMode");
+    return saved === "true";
+  } catch (error) {
+    console.error("Failed to read autoMode from localStorage:", error);
+    return false;
+  }
+};
+
 export const INITIAL_SESSION_STATE: SessionState = {
   isSessionMetadataLoading: false,
   allSessionMetadata: [],
@@ -250,7 +261,7 @@ export const INITIAL_SESSION_STATE: SessionState = {
   lastSessionId: undefined,
   newestToolbarPreviewForInput: {},
   compactionLoading: {},
-  isAutoMode: false,
+  isAutoMode: getInitialAutoMode(),
 };
 
 export const sessionSlice = createSlice({
@@ -695,8 +706,8 @@ export const sessionSlice = createSlice({
       state.inlineErrorMessage = undefined;
       state.isPruned = false;
       state.contextPercentage = undefined;
-      // 重設 Auto Mode 為預設值（關閉）
-      state.isAutoMode = false;
+      // 保持使用者的 Auto Mode 偏好設定（不重設）
+      // state.isAutoMode 會保持當前值
 
       if (payload) {
         state.history = payload.history as any;
@@ -1008,9 +1019,17 @@ export const sessionSlice = createSlice({
      *
      * 當 Auto Mode 啟用時，大部分工具會自動執行而不需要使用者確認，
      * 但危險指令（如 rm -rf, sudo 等）仍會要求確認。
+     *
+     * 此設定會被持久化到 localStorage，下次開啟時會自動恢復。
      */
     setAutoMode: (state, action: PayloadAction<boolean>) => {
       state.isAutoMode = action.payload;
+      // 持久化到 localStorage
+      try {
+        localStorage.setItem("autoMode", String(action.payload));
+      } catch (error) {
+        console.error("Failed to save autoMode to localStorage:", error);
+      }
     },
   },
   selectors: {
