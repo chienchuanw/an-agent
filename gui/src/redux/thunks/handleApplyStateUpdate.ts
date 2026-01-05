@@ -49,12 +49,21 @@ export const handleApplyStateUpdate = createAsyncThunk<
           applyState.toolCallId,
         );
 
-        if (
+        // Auto-accept diff in two cases:
+        // 1. Tool is set to "allowedWithoutPermission" in tool settings
+        // 2. Auto Mode is enabled (unless it's a dangerous command, but file edits are safe)
+        const state = getState();
+        const isAutoMode = state.session.isAutoMode;
+        const toolName = toolCallState?.toolCall.function.name;
+        const toolSetting = toolName
+          ? state.ui.toolSettings[toolName]
+          : undefined;
+
+        const shouldAutoAccept =
           applyState.status === "done" &&
-          toolCallState?.toolCall.function.name &&
-          getState().ui.toolSettings[toolCallState.toolCall.function.name] ===
-            "allowedWithoutPermission"
-        ) {
+          (toolSetting === "allowedWithoutPermission" || isAutoMode);
+
+        if (shouldAutoAccept) {
           extra.ideMessenger.post("acceptDiff", {
             streamId: applyState.streamId,
             filepath: applyState.filepath,
