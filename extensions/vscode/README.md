@@ -30,40 +30,45 @@ The leading open-source AI code agent for VSCode.
 
 ---
 
-## 本地開發與打包指南
+## Local Development and Packaging Guide
 
-本節說明如何在本地進行版本管理、打包和安裝 Continue VSCode 擴充套件。
+This section explains how to manage versions, package, and install the Continue VSCode extension locally.
 
-### 前置需求
+### Prerequisites
 
 - Node.js >= 20.19.0
-- npm 或 pnpm
+
+- npm or pnpm
 - VSCode >= 1.70.0
 - Git
 
-### 版本管理流程
+### Version Management Workflow
 
-#### 1. 決定版本號
+#### 1. Determine Version Number
 
-遵循 [Semantic Versioning](https://semver.org/) 規範:
+Follow [Semantic Versioning](https://semver.org/) conventions:
 
 ```text
-MAJOR.MINOR.PATCH (例如: 1.3.29)
+
+MAJOR.MINOR.PATCH (e.g.: 1.3.29)
   │      │      │
-  │      │      └─ PATCH: Bug 修復、小改進 (1.3.28 → 1.3.29)
-  │      └────── MINOR: 新功能,向後相容 (1.3.0 → 1.4.0)
-  └──────────── MAJOR: 重大變更,可能不相容 (1.0.0 → 2.0.0)
+
+
+
+  │      │      └─ PATCH: Bug fixes, minor improvements (1.3.28 → 1.3.29)
+  │      └────── MINOR: New features, backward compatible (1.3.0 → 1.4.0)
+  └──────────── MAJOR: Breaking changes, potentially incompatible (1.0.0 → 2.0.0)
 ```
 
-**決策指南:**
+**Decision Guide:**
 
-- 修復 bug → 增加 PATCH
-- 新增功能 → 增加 MINOR
-- 破壞性變更 → 增加 MAJOR
+- Bug fix → increment PATCH
+- New feature → increment MINOR
+- Breaking change → increment MAJOR
 
-#### 2. 更新版本號
+#### 2. Update Version Number
 
-編輯 `extensions/vscode/package.json`,更新 `version` 欄位:
+Edit `extensions/vscode/package.json` and update the `version` field:
 
 ```json
 {
@@ -72,7 +77,7 @@ MAJOR.MINOR.PATCH (例如: 1.3.29)
 }
 ```
 
-#### 3. 提交版本變更
+#### 3. Commit Version Changes
 
 ```bash
 cd /path/to/continue-an-agent
@@ -80,90 +85,94 @@ git add extensions/vscode/package.json
 git commit -m "chore(release): bump version to 1.3.29"
 ```
 
-#### 4. 建立 Git Tag
+#### 4. Create Git Tag
 
 ```bash
-# 建立 annotated tag (推薦)
+
+# Create annotated tag (recommended)
 git tag -a v1.3.29 -m "Release v1.3.29 - Fix auto mode permission"
 
-# 或簡單版本
+
+# Or simple version
 git tag v1.3.29
 ```
 
-**Tag 命名慣例:**
+**Tag Naming Convention:**
 
-- 使用 `v` 前綴: `v1.3.29`
-- 與 package.json 版本號保持一致
+- Use `v` prefix: `v1.3.29`
+- Keep consistent with package.json version number
 
-**查看已建立的 tag:**
+**View created tags:**
 
 ```bash
 git tag -l
 git show v1.3.29
 ```
 
-**刪除 tag (如果出錯):**
+**Delete tag (if error occurred):**
 
 ```bash
-# 刪除本地 tag
+
+# Delete local tag
 git tag -d v1.3.29
 
-# 刪除遠端 tag (如果已推送)
+
+# Delete remote tag (if already pushed)
 git push origin --delete v1.3.29
 ```
 
 ---
 
-### 本地打包 VSIX
+### Local VSIX Packaging
 
-#### 步驟 1: 進入擴充套件目錄
+#### Step 1: Enter the Extension Directory
 
 ```bash
 cd extensions/vscode
 ```
 
-#### 步驟 2: 執行預打包
+#### Step 2: Run Pre-packaging
 
-此步驟會準備所有必要的檔案:
+This step prepares all necessary files:
 
 ```bash
 npm run prepackage
 ```
 
-**此步驟會:**
+**This step will:**
 
-- 安裝依賴
-- 編譯 TypeScript → JavaScript
-- 建置 GUI (React 應用)
-- 複製 native modules (SQLite, LanceDB 等)
-- 準備 tree-sitter WASM 檔案
+- Install dependencies
+- Compile TypeScript → JavaScript
+- Build the GUI (React application)
+- Copy native modules (SQLite, LanceDB, etc.)
+- Prepare tree-sitter WASM files
 
-#### 步驟 3: 打包成 VSIX
+#### Step 3: Package as VSIX
 
 ```bash
 npm run package
 ```
 
-**輸出:**
+**Output:**
 
-- VSIX 檔案位置: `extensions/vscode/build/continue-1.3.29.vsix`
-- 檔案大小: 通常 100-200MB (包含所有依賴)
+- VSIX file location: `extensions/vscode/build/continue-1.3.29.vsix`
+- File size: typically 100-200MB (includes all dependencies)
 
-#### 步驟 4: 驗證打包結果
+#### Step 4: Verify Packaging Result
 
 ```bash
 ls -lh build/*.vsix
 ```
 
-**跨平台打包 (可選):**
+**Cross-platform Packaging (Optional):**
 
-如果需要為多個平台打包:
+If you need to package for multiple platforms:
 
 ```bash
 npm run package-all
 ```
 
-此命令會為以下平台建立 VSIX:
+This command will create VSIX for the following platforms:
 
 - Windows (x64)
 - Linux (x64, arm64)
@@ -171,55 +180,56 @@ npm run package-all
 
 ---
 
-### 安裝擴充套件
+### Installing the Extension
 
-#### 方法 1: 使用命令列安裝 (推薦)
+#### Method 1: Install via Command Line (Recommended)
 
 ```bash
 code --install-extension extensions/vscode/build/continue-1.3.29.vsix
 ```
 
-#### 方法 2: 在 VSCode 中手動安裝
+#### Method 2: Manual Installation in VSCode
 
-1. 打開 VSCode
-2. 按 `Cmd+Shift+P` (Mac) 或 `Ctrl+Shift+P` (Windows/Linux)
-3. 輸入 "Install from VSIX"
-4. 選擇 `extensions/vscode/build/continue-1.3.29.vsix`
+1. Open VSCode
+2. Press `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux)
+3. Type "Install from VSIX"
+4. Select `extensions/vscode/build/continue-1.3.29.vsix`
 
-#### 方法 3: 拖放安裝
+#### Method 3: Drag and Drop Installation
 
-1. 打開 VSCode 的擴充套件面板 (`Cmd+Shift+X`)
-2. 點擊右上角的 "..." 選單
-3. 選擇 "Install from VSIX..."
-4. 選擇 VSIX 檔案
+1. Open VSCode's Extensions panel (`Cmd+Shift+X`)
+2. Click the "..." menu in the top right
+3. Select "Install from VSIX..."
+4. Select the VSIX file
 
-**驗證安裝:**
+**Verify Installation:**
 
 ```bash
-# 列出已安裝的擴充套件
+
+# List installed extensions
 code --list-extensions | grep -i continue
 ```
 
 ---
 
-### 解除安裝擴充套件
+### Uninstalling the Extension
 
-#### 方法 1: 使用命令列解除安裝
+#### Method 1: Uninstall via Command Line
 
 ```bash
 code --uninstall-extension Continue.continue
 ```
 
-#### 方法 2: 在 VSCode 中手動解除安裝
+#### Method 2: Manual Uninstall in VSCode
 
-1. 打開擴充套件面板 (`Cmd+Shift+X`)
-2. 搜尋 "Continue"
-3. 點擊擴充套件卡片上的齒輪圖示
-4. 選擇 "Uninstall"
+1. Open the Extensions panel (`Cmd+Shift+X`)
+2. Search for "Continue"
+3. Click the gear icon on the extension card
+4. Select "Uninstall"
 
-#### 方法 3: 完全移除擴充套件資料
+#### Method 3: Completely Remove Extension Data
 
-解除安裝後,如果想完全移除所有設定和快取:
+After uninstalling, if you want to completely remove all settings and cache:
 
 ```bash
 # macOS
@@ -237,129 +247,149 @@ rmdir /s "%APPDATA%\Code\User\globalStorage\Continue.continue"
 
 ---
 
-### 版本管理最佳實踐
+### Version Management Best Practices
 
-#### 安裝新版本前的準備
+#### Preparation Before Installing a New Version
 
 ```bash
-# 1. 備份舊版本 (可選)
+
+# 1. Back up the old version (optional)
 cp ~/.vscode/extensions/Continue.continue-1.3.28 \
    ~/.vscode/extensions/Continue.continue-1.3.28.backup
 
-# 2. 解除安裝舊版本
+
+# 2. Uninstall the old version
 code --uninstall-extension Continue.continue
 
-# 3. 安裝新版本
+
+# 3. Install the new version
 code --install-extension extensions/vscode/build/continue-1.3.29.vsix
 ```
 
-#### 檢查已安裝的版本
+#### Check Installed Versions
 
 ```bash
-# 列出 Continue 的所有版本
+
+# List all versions of Continue
 ls -la ~/.vscode/extensions/ | grep -i continue
 
-# 查看特定版本的資訊
+
+# View information about a specific version
 cat ~/.vscode/extensions/Continue.continue-1.3.29/package.json | grep version
 ```
 
-#### 快速切換版本
+#### Quick Version Switching
 
 ```bash
-# 列出所有已安裝的版本
+
+# List all installed versions
 code --list-extensions --show-versions | grep -i continue
 
-# 解除安裝當前版本
+
+# Uninstall the current version
 code --uninstall-extension Continue.continue
 
-# 安裝特定版本
+
+# Install a specific version
 code --install-extension path/to/continue-1.3.28.vsix
 ```
 
 ---
 
-### 常見問題
+### FAQ
 
-**Q: 打包失敗,提示找不到檔案?**
+**Q: Packaging failed with "file not found" error?**
 
-A: 確保執行了 `npm run prepackage`:
+A: Make sure you ran `npm run prepackage`:
 
 ```bash
 npm run prepackage
 npm run package
 ```
 
-**Q: 安裝後擴充套件沒有出現?**
+**Q: The extension doesn't appear after installation?**
 
-A: 嘗試重啟 VSCode 或執行:
+A: Try restarting VSCode or running:
 
 ```bash
 code --reload-window
 ```
 
-**Q: 如何確認安裝的是正確版本?**
+**Q: How do I verify that I installed the correct version?**
 
-A: 在 VSCode 中:
+A: In VSCode:
 
-1. 打開擴充套件面板 (`Cmd+Shift+X`)
-2. 搜尋 "Continue"
-3. 查看版本號
+1. Open the Extensions panel (`Cmd+Shift+X`)
+2. Search for "Continue"
+3. Check the version number
 
-或使用命令列:
+Or use the command line:
 
 ```bash
 code --list-extensions --show-versions | grep -i continue
 ```
 
-**Q: 可以同時安裝多個版本嗎?**
+**Q: Can I install multiple versions at the same time?**
 
-A: 不可以。VSCode 只允許安裝一個版本的擴充套件。需要先解除安裝舊版本才能安裝新版本。
+A: No. VSCode only allows installing one version of an extension. You must uninstall the old version before installing a new one.
 
-**Q: 如何回滾到舊版本?**
+**Q: How do I roll back to an old version?**
 
 A:
 
 ```bash
-# 1. 解除安裝當前版本
+
+# 1. Uninstall the current version
 code --uninstall-extension Continue.continue
 
-# 2. 安裝舊版本
+
+# 2. Install the old version
 code --install-extension path/to/continue-1.3.28.vsix
 ```
 
 ---
 
-### 開發工作流程
+### Development Workflow
 
-**完整的發布流程:**
+**Complete release process:**
 
 ```bash
-# 1. 開發功能/修復 bug
-# ... 編輯程式碼 ...
 
-# 2. 測試確認無誤
+
+# 1. Develop features/fix bugs
+# ... edit code ...
+
+
+# 2. Test to ensure it works
 npm run test
 
-# 3. 更新版本號
-# 編輯 extensions/vscode/package.json
 
-# 4. 提交版本變更
+
+# 3. Update version number
+# Edit extensions/vscode/package.json
+
+
+# 4. Commit version changes
 git add extensions/vscode/package.json
 git commit -m "chore(release): bump version to 1.3.29"
 
-# 5. 建立 Git Tag
+
+# 5. Create Git Tag
 git tag -a v1.3.29 -m "Release v1.3.29"
 
-# 6. 打包 VSIX
+
+# 6. Package VSIX
 cd extensions/vscode
 npm run prepackage
 npm run package
 
-# 7. 測試安裝
+
+# 7. Test installation
 code --uninstall-extension Continue.continue
 code --install-extension build/continue-1.3.29.vsix
 
-# 8. (可選) 推送到遠端
+
+# 8. (Optional) Push to remote
 git push origin main --tags
 ```
 
