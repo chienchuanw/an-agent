@@ -64,6 +64,7 @@ const StyledMarkdown = styled.div<{
   pre {
     white-space: ${(props) => props.whiteSpace};
     background-color: ${vscEditorBackground};
+    color: ${vscForeground};
     border-radius: ${defaultBorderRadius};
 
     max-width: calc(100vw - 24px);
@@ -80,6 +81,7 @@ const StyledMarkdown = styled.div<{
     word-wrap: break-word;
     border-radius: 0.3125rem;
     background-color: ${vscEditorBackground};
+    color: ${vscForeground};
     font-size: ${getFontSize() - 2}px;
     font-family: var(--vscode-editor-font-family);
   }

@@ -112,7 +112,7 @@ const TerminalContent = styled.div`
     font-family:
       ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono",
       Menlo, monospace;
-    color: var(--input-placeholder);
+    color: var(--foreground);
   }
 `;
 
