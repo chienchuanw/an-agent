@@ -21,6 +21,11 @@ export function ToolCallDiv({
   const [open, setOpen] = useState(true);
   const availableTools = useAppSelector((state) => state.config.config.tools);
 
+  // 從 history 取得 promptLogs
+  const history = useAppSelector((state) => state.session.history);
+  const historyItem = history[historyIndex];
+  const promptLogs = historyItem?.promptLogs;
+
   if (!toolCallStates?.length) return null;
 
   const isStreamingComplete = toolCallStates.every(
@@ -96,6 +101,7 @@ export function ToolCallDiv({
           activeCalls={pendingCalls.length > 0 ? pendingCalls : activeCalls}
           open={open}
           onToggle={() => setOpen(!open)}
+          promptLogs={promptLogs}
         />
         <div
           className={`overflow-y-auto transition-all duration-300 ease-in-out ${

@@ -486,6 +486,7 @@ export interface PromptLog {
   prompt: string;
   completion: string;
   usage?: Usage;
+  actionId?: string; // 用於追蹤 LLM 調用屬於哪個 action (tool call)
 }
 
 export type MessageModes = "chat" | "agent" | "plan" | "background";
@@ -1920,6 +1921,7 @@ interface AddToChatPayloadItem {
 
 export interface MessageOption {
   precompiled: boolean;
+  actionId?: string; // 用於追蹤 LLM 調用屬於哪個 action (tool call)
 }
 
 /* LSP-specific interfaces. */

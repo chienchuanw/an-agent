@@ -28,6 +28,25 @@ export interface LanceDbVectorStoreConfig {
 }
 
 /**
+ * LanceDbVectorStore interface
+ * 定義 LanceDbVectorStore 的公開方法
+ */
+export interface ILanceDbVectorStore {
+  initialize(): Promise<void>;
+  add(
+    filepath: string,
+    chunks: CodeChunk[],
+    embeddings: number[][],
+  ): Promise<void>;
+  search(
+    queryEmbedding: number[],
+    limit: number,
+  ): Promise<Array<{ chunk: CodeChunk; score: number }>>;
+  delete(filepath: string): Promise<void>;
+  dispose(): Promise<void>;
+}
+
+/**
  * LanceDbVectorStore class
  *
  * Responsibilities:
@@ -35,7 +54,7 @@ export interface LanceDbVectorStoreConfig {
  * - Search for similar vectors
  * - Manage table lifecycle
  */
-export class LanceDbVectorStore {
+export class LanceDbVectorStore implements ILanceDbVectorStore {
   private config: LanceDbVectorStoreConfig;
   private table: any = null;
   private initialized: boolean = false;
@@ -105,7 +124,7 @@ export class LanceDbVectorStore {
   /**
    * Remove all chunks for a file
    */
-  async remove(filepath: string): Promise<void> {
+  async delete(filepath: string): Promise<void> {
     if (!this.initialized) {
       throw new Error("LanceDbVectorStore must be initialized before use");
     }
@@ -121,7 +140,10 @@ export class LanceDbVectorStore {
   /**
    * Search for similar vectors
    */
-  async search(queryVector: number[], limit: number): Promise<CodeChunk[]> {
+  async search(
+    queryVector: number[],
+    limit: number,
+  ): Promise<Array<{ chunk: CodeChunk; score: number }>> {
     if (!this.initialized) {
       throw new Error("LanceDbVectorStore must be initialized before use");
     }
@@ -137,10 +159,12 @@ export class LanceDbVectorStore {
       .execute();
 
     return results.map((row) => ({
-      filepath: row.filepath,
-      content: row.content,
-      startLine: row.startLine,
-      endLine: row.endLine,
+      chunk: {
+        filepath: row.filepath,
+        content: row.content,
+        startLine: row.startLine,
+        endLine: row.endLine,
+      },
       score: row._distance ? 1 - row._distance : 0,
     }));
   }

@@ -276,16 +276,39 @@ export const sessionSlice = createSlice({
         return;
       }
 
-      const lastMessage = state.history[state.history.length - 1];
+      // 檢查 payload 中是否有 actionId（tool call 的 ID）
+      const hasActionId = payload.some((log) => log.actionId);
 
-      lastMessage.promptLogs = lastMessage.promptLogs
-        ? lastMessage.promptLogs.concat(payload)
+      let targetMessage: ChatHistoryItemWithMessageId;
+
+      if (hasActionId) {
+        // 如果有 actionId，找到包含該 toolCallId 的 assistant message
+        const actionId = payload.find((log) => log.actionId)?.actionId;
+        const messageWithToolCall = state.history.findLast(
+          (item) =>
+            item.message.role === "assistant" &&
+            item.toolCallStates?.some((tc) => tc.toolCallId === actionId),
+        );
+
+        if (messageWithToolCall) {
+          targetMessage = messageWithToolCall;
+        } else {
+          // 如果找不到，fallback 到最後一個 message
+          targetMessage = state.history[state.history.length - 1];
+        }
+      } else {
+        // 如果沒有 actionId，使用最後一個 message（正常的 chat）
+        targetMessage = state.history[state.history.length - 1];
+      }
+
+      targetMessage.promptLogs = targetMessage.promptLogs
+        ? targetMessage.promptLogs.concat(payload)
         : payload;
 
       // Inactive thinking for reasoning models when '</think>' tag is not received on request completion
-      if (lastMessage.reasoning?.active) {
-        lastMessage.reasoning.active = false;
-        lastMessage.reasoning.endAt = Date.now();
+      if (targetMessage.reasoning?.active) {
+        targetMessage.reasoning.active = false;
+        targetMessage.reasoning.endAt = Date.now();
       }
     },
     setActive: (state) => {

@@ -5,9 +5,22 @@
  * Primary retrieval method for understanding-based queries.
  */
 
-import { IRetriever, RetrievalCandidate, RetrievalQuery } from "./types";
 import { ILanceDbVectorStore } from "../embeddings/LanceDbVectorStore";
 import { ILocalEmbeddingProvider } from "../embeddings/LocalEmbeddingProvider";
+import { IRetriever, RetrievalCandidate, RetrievalQuery } from "./types";
+
+/**
+ * Vector 搜尋結果類型
+ */
+interface VectorResult {
+  chunk: {
+    filepath: string;
+    content: string;
+    startLine: number;
+    endLine: number;
+  };
+  score: number;
+}
 
 /**
  * Semantic Retriever configuration
@@ -69,34 +82,33 @@ export class SemanticRetriever implements IRetriever {
 
     // Step 2: Search vector store
     const limit = query.limit ?? this.config.defaultLimit;
-    const vectorResults = await this.vectorStore.search(queryEmbedding, limit);
+    const vectorResults: VectorResult[] = await this.vectorStore.search(
+      queryEmbedding,
+      limit,
+    );
 
     // Step 3: Filter by minimum score
     const minScore = query.minScore ?? this.config.minSimilarity;
     const filteredResults = vectorResults.filter(
-      (result) => result.score >= minScore,
+      (result: VectorResult) => result.score >= minScore,
     );
 
     // Step 4: Convert to candidates
-    const candidates: RetrievalCandidate[] = filteredResults.map((result) => ({
-      filePath: result.metadata.filePath,
-      content: result.content,
-      score: this.normalizeScore(result.score),
-      method: this.getName(),
-      lineRange: result.metadata.lineRange
-        ? {
-            start: result.metadata.lineRange.start,
-            end: result.metadata.lineRange.end,
-          }
-        : undefined,
-      metadata: {
-        language: result.metadata.language,
-        symbolName: result.metadata.symbolName,
-        symbolType: result.metadata.symbolType,
-        lastModified: result.metadata.lastModified,
-        rawScore: result.score,
-      },
-    }));
+    const candidates: RetrievalCandidate[] = filteredResults.map(
+      (result: VectorResult) => ({
+        filePath: result.chunk.filepath,
+        content: result.chunk.content,
+        score: this.normalizeScore(result.score),
+        method: this.getName(),
+        lineRange: {
+          start: result.chunk.startLine,
+          end: result.chunk.endLine,
+        },
+        metadata: {
+          rawScore: result.score,
+        },
+      }),
+    );
 
     // Step 5: Apply file pattern filters if specified
     let finalCandidates = candidates;

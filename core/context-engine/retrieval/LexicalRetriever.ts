@@ -5,8 +5,26 @@
  * Excellent for finding specific identifiers, function names, or error messages.
  */
 
-import { IRetriever, RetrievalCandidate, RetrievalQuery } from "./types";
 import { IMetadataStore } from "../indexer/MetadataStore";
+import { IRetriever, RetrievalCandidate, RetrievalQuery } from "./types";
+
+/**
+ * FTS 搜尋結果類型
+ */
+interface FTSResult {
+  filePath: string;
+  content: string;
+  score: number;
+  lineRange?: {
+    start: number;
+    end: number;
+  };
+  language?: string;
+  symbolName?: string;
+  symbolType?: string;
+  lastModified?: Date;
+  matchedTerms?: string[];
+}
 
 /**
  * Lexical Retriever configuration
@@ -63,7 +81,7 @@ export class LexicalRetriever implements IRetriever {
 
     // Step 2: Execute FTS5 search
     const limit = query.limit ?? this.config.defaultLimit;
-    const ftsResults = await this.metadataStore.fullTextSearch(
+    const ftsResults: FTSResult[] = await this.metadataStore.fullTextSearch(
       searchQuery,
       limit,
     );
@@ -71,30 +89,32 @@ export class LexicalRetriever implements IRetriever {
     // Step 3: Filter by minimum score
     const minScore = query.minScore ?? this.config.minScore;
     const filteredResults = ftsResults.filter(
-      (result) => result.score >= minScore,
+      (result: FTSResult) => result.score >= minScore,
     );
 
     // Step 4: Convert to candidates
-    const candidates: RetrievalCandidate[] = filteredResults.map((result) => ({
-      filePath: result.filePath,
-      content: result.content,
-      score: this.normalizeScore(result.score),
-      method: this.getName(),
-      lineRange: result.lineRange
-        ? {
-            start: result.lineRange.start,
-            end: result.lineRange.end,
-          }
-        : undefined,
-      metadata: {
-        language: result.language,
-        symbolName: result.symbolName,
-        symbolType: result.symbolType,
-        lastModified: result.lastModified,
-        rawScore: result.score,
-        matchedTerms: result.matchedTerms,
-      },
-    }));
+    const candidates: RetrievalCandidate[] = filteredResults.map(
+      (result: FTSResult) => ({
+        filePath: result.filePath,
+        content: result.content,
+        score: this.normalizeScore(result.score),
+        method: this.getName(),
+        lineRange: result.lineRange
+          ? {
+              start: result.lineRange.start,
+              end: result.lineRange.end,
+            }
+          : undefined,
+        metadata: {
+          language: result.language,
+          symbolName: result.symbolName,
+          symbolType: result.symbolType,
+          lastModified: result.lastModified,
+          rawScore: result.score,
+          matchedTerms: result.matchedTerms,
+        },
+      }),
+    );
 
     // Step 5: Apply filters
     let finalCandidates = candidates;

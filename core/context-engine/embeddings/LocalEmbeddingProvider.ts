@@ -16,6 +16,16 @@ export interface LocalEmbeddingProviderConfig {
 }
 
 /**
+ * LocalEmbeddingProvider interface
+ * 定義 LocalEmbeddingProvider 的公開方法
+ */
+export interface ILocalEmbeddingProvider {
+  embed(texts: string[]): Promise<number[][]>;
+  generateEmbedding(text: string): Promise<number[]>;
+  clearCache(): void;
+}
+
+/**
  * LocalEmbeddingProvider class
  *
  * Responsibilities:
@@ -23,7 +33,7 @@ export interface LocalEmbeddingProviderConfig {
  * - Batch processing for efficiency
  * - Simple caching mechanism
  */
-export class LocalEmbeddingProvider {
+export class LocalEmbeddingProvider implements ILocalEmbeddingProvider {
   private config: LocalEmbeddingProviderConfig;
   private cache: Map<string, number[]> = new Map();
 
@@ -59,6 +69,14 @@ export class LocalEmbeddingProvider {
     }
 
     return results;
+  }
+
+  /**
+   * Generate embedding for a single text
+   */
+  async generateEmbedding(text: string): Promise<number[]> {
+    const [embedding] = await this.embed([text]);
+    return embedding;
   }
 
   /**

@@ -80,7 +80,15 @@ export const streamResponseAfterToolCall = createAsyncThunk<
             state.config.config.ui?.continueAfterToolRejection,
           )
         ) {
-          unwrapResult(await dispatch(streamNormalInput({ depth: depth + 1 })));
+          // 傳遞 toolCallId 作為 actionId，用於追蹤該 tool call 的 token 使用量
+          unwrapResult(
+            await dispatch(
+              streamNormalInput({
+                depth: depth + 1,
+                actionId: toolCallId,
+              }),
+            ),
+          );
         }
       }),
     );

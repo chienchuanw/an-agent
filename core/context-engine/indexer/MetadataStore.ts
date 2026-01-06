@@ -24,6 +24,16 @@ export interface MetadataStoreConfig {
 }
 
 /**
+ * MetadataStore interface
+ * 定義 MetadataStore 的公開方法
+ */
+export interface IMetadataStore {
+  initialize(): Promise<void>;
+  fullTextSearch(query: string, limit: number): Promise<any[]>;
+  getRecentlyModifiedFiles(threshold: Date, limit: number): Promise<any[]>;
+}
+
+/**
  * MetadataStore class
  *
  * Responsibilities:
@@ -32,7 +42,7 @@ export interface MetadataStoreConfig {
  * - Persist file hashes
  * - Query metadata
  */
-export class MetadataStore {
+export class MetadataStore implements IMetadataStore {
   private config: MetadataStoreConfig;
   private db: any = null;
   private initialized: boolean = false;
@@ -103,6 +113,27 @@ export class MetadataStore {
       }
     }
     return files;
+  }
+
+  /**
+   * Full-text search (stub implementation)
+   */
+  async fullTextSearch(query: string, limit: number): Promise<any[]> {
+    // TODO: Implement FTS5 full-text search
+    // For now, return empty array
+    return [];
+  }
+
+  /**
+   * Get recently modified files (stub implementation)
+   */
+  async getRecentlyModifiedFiles(
+    threshold: Date,
+    limit: number,
+  ): Promise<any[]> {
+    // TODO: Implement recently modified files query
+    // For now, return empty array
+    return [];
   }
 
   /**

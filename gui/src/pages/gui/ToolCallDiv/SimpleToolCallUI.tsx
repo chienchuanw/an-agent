@@ -4,7 +4,9 @@ import {
   ContextItemsPeekItem,
   openContextItem,
 } from "../../../components/mainInput/belowMainInput/ContextItemsPeek";
+import ActionTokenUsageDisplay from "../../../components/StepContainer/ActionTokenUsageDisplay";
 import { IdeMessengerContext } from "../../../context/IdeMessenger";
+import { useAppSelector } from "../../../redux/hooks";
 import { ToggleWithIcon } from "./ToggleWithIcon";
 import { ToolCallStatusMessage } from "./ToolCallStatusMessage";
 import { ToolTruncateHistoryIcon } from "./ToolTruncateHistoryIcon";
@@ -28,6 +30,11 @@ export function SimpleToolCallUI({
     const contextItems = toolCallStateToContextItems(toolCallState);
     return contextItems.filter((item) => !item.hidden);
   }, [toolCallState]);
+
+  // 從 history 取得 promptLogs
+  const history = useAppSelector((state) => state.session.history);
+  const historyItem = history[historyIndex];
+  const promptLogs = historyItem?.promptLogs;
 
   const [open, setOpen] = useState(false);
 
@@ -83,6 +90,16 @@ export function SimpleToolCallUI({
               No tool call output
             </div>
           )}
+        </div>
+      )}
+
+      {/* 顯示 action token 使用量（只在 tool call 完成後顯示） */}
+      {toolCallState.status === "done" && (
+        <div className="mt-2">
+          <ActionTokenUsageDisplay
+            actionId={toolCallState.toolCallId}
+            promptLogs={promptLogs}
+          />
         </div>
       )}
     </div>

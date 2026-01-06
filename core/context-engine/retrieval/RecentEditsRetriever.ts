@@ -5,8 +5,24 @@
  * Particularly useful for bug fixing and understanding recent changes.
  */
 
-import { IRetriever, RetrievalCandidate, RetrievalQuery } from "./types";
 import { IMetadataStore } from "../indexer/MetadataStore";
+import { IRetriever, RetrievalCandidate, RetrievalQuery } from "./types";
+
+/**
+ * 最近修改的檔案類型
+ */
+interface RecentFile {
+  filePath: string;
+  content: string;
+  lastModified: Date;
+  lineRange?: {
+    start: number;
+    end: number;
+  };
+  language?: string;
+  symbolName?: string;
+  symbolType?: string;
+}
 
 /**
  * Recent Edits Retriever configuration
@@ -64,36 +80,39 @@ export class RecentEditsRetriever implements IRetriever {
 
     // Step 2: Query recently modified files
     const limit = query.limit ?? this.config.defaultLimit;
-    const recentFiles = await this.metadataStore.getRecentlyModifiedFiles(
-      threshold,
-      limit * 2, // Get more than needed for filtering
-    );
+    const recentFiles: RecentFile[] =
+      await this.metadataStore.getRecentlyModifiedFiles(
+        threshold,
+        limit * 2, // Get more than needed for filtering
+      );
 
     // Step 3: Convert to candidates with time-based scoring
-    const candidates: RetrievalCandidate[] = recentFiles.map((file) => {
-      const timeSinceEdit = now - file.lastModified.getTime();
-      const score = this.calculateTimeBasedScore(timeSinceEdit);
+    const candidates: RetrievalCandidate[] = recentFiles.map(
+      (file: RecentFile) => {
+        const timeSinceEdit = now - file.lastModified.getTime();
+        const score = this.calculateTimeBasedScore(timeSinceEdit);
 
-      return {
-        filePath: file.filePath,
-        content: file.content,
-        score,
-        method: this.getName(),
-        lineRange: file.lineRange
-          ? {
-              start: file.lineRange.start,
-              end: file.lineRange.end,
-            }
-          : undefined,
-        metadata: {
-          language: file.language,
-          symbolName: file.symbolName,
-          symbolType: file.symbolType,
-          lastModified: file.lastModified,
-          timeSinceEdit,
-        },
-      };
-    });
+        return {
+          filePath: file.filePath,
+          content: file.content,
+          score,
+          method: this.getName(),
+          lineRange: file.lineRange
+            ? {
+                start: file.lineRange.start,
+                end: file.lineRange.end,
+              }
+            : undefined,
+          metadata: {
+            language: file.language,
+            symbolName: file.symbolName,
+            symbolType: file.symbolType,
+            lastModified: file.lastModified,
+            timeSinceEdit,
+          },
+        };
+      },
+    );
 
     // Step 4: Apply query relevance filtering (simple keyword matching)
     const filteredCandidates = this.filterByRelevance(candidates, query.text);

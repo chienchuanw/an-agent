@@ -1325,6 +1325,7 @@ export abstract class BaseLLM implements ILLM {
       prompt,
       completion: completion.join(""),
       usage,
+      actionId: messageOptions?.actionId, // 從 messageOptions 取得 actionId
     };
   }
 

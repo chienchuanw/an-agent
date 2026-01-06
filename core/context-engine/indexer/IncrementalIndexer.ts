@@ -103,8 +103,8 @@ export class IncrementalIndexer implements IIndexer {
           },
         ];
 
-        // Generate embeddings
-        await this.config.embeddingProvider.embed(content);
+        // Generate embeddings (embed 方法期望接收 string[] 而非 string)
+        await this.config.embeddingProvider.embed([content]);
 
         // Store in vector database
         await this.config.vectorStore.add(filepath, chunks);

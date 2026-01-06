@@ -65,4 +65,49 @@ describe("PromptLog type", () => {
     expect(promptLog.usage?.completionTokens).toBe(100);
     expect(promptLog.usage?.promptTokensDetails).toBeUndefined();
   });
+
+  test("should allow PromptLog with actionId field", () => {
+    // 測試：PromptLog 應該可以包含 actionId 欄位（用於追蹤 tool call）
+    const promptLogWithActionId: PromptLog = {
+      modelTitle: "Claude 3.5 Sonnet",
+      modelProvider: "anthropic",
+      prompt: "Test prompt",
+      completion: "Test completion",
+      actionId: "tool-call-123",
+    };
+
+    expect(promptLogWithActionId.actionId).toBe("tool-call-123");
+  });
+
+  test("should allow PromptLog without actionId field", () => {
+    // 測試：actionId 欄位應該是可選的
+    const promptLogWithoutActionId: PromptLog = {
+      modelTitle: "GPT-4",
+      modelProvider: "openai",
+      prompt: "Test prompt",
+      completion: "Test completion",
+    };
+
+    expect(promptLogWithoutActionId.actionId).toBeUndefined();
+  });
+
+  test("should allow PromptLog with both usage and actionId", () => {
+    // 測試：PromptLog 可以同時包含 usage 和 actionId
+    const usage: Usage = {
+      promptTokens: 500,
+      completionTokens: 150,
+    };
+
+    const promptLog: PromptLog = {
+      modelTitle: "Claude 3.5 Sonnet",
+      modelProvider: "anthropic",
+      prompt: "Test prompt",
+      completion: "Test completion",
+      usage: usage,
+      actionId: "tool-call-456",
+    };
+
+    expect(promptLog.usage?.promptTokens).toBe(500);
+    expect(promptLog.actionId).toBe("tool-call-456");
+  });
 });

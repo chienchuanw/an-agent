@@ -73,12 +73,13 @@ export const streamNormalInput = createAsyncThunk<
   {
     legacySlashCommandData?: ToCoreProtocol["llm/streamChat"][0]["legacySlashCommandData"];
     depth?: number;
+    actionId?: string; // 用於追蹤 tool call 的 actionId
   },
   ThunkApiType
 >(
   "chat/streamNormalInput",
   async (
-    { legacySlashCommandData, depth = 0 },
+    { legacySlashCommandData, depth = 0, actionId },
     { dispatch, extra, getState },
   ) => {
     if (process.env.NODE_ENV === "test" && depth > 50) {
@@ -189,7 +190,10 @@ export const streamNormalInput = createAsyncThunk<
           title: selectedChatModel.title,
           messages: compiledChatMessages,
           legacySlashCommandData,
-          messageOptions: { precompiled: true },
+          messageOptions: {
+            precompiled: true,
+            actionId, // 傳遞 actionId 用於追蹤 tool call 的 token 使用量
+          },
         },
         streamAborter.signal,
       );

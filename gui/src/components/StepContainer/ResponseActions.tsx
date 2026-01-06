@@ -60,14 +60,52 @@ export default function ResponseActions({
     dispatch(setDialogMessage(<GenerateRuleDialog />));
   };
 
-  // 從 promptLogs 中取得最後一個 usage 資訊
+  // 從 promptLogs 中累計所有的 usage 資訊（包括 tool calls 和正常 chat）
   const usage = useMemo(() => {
     if (!item.promptLogs || item.promptLogs.length === 0) {
       return undefined;
     }
-    // 取得最後一個 promptLog 的 usage
-    const lastPromptLog = item.promptLogs[item.promptLogs.length - 1];
-    return lastPromptLog?.usage;
+
+    // 累計所有 promptLogs 的 token 使用量
+    let totalPromptTokens = 0;
+    let totalCompletionTokens = 0;
+    let totalCachedTokens = 0;
+    let totalCacheWriteTokens = 0;
+    let totalReasoningTokens = 0;
+
+    item.promptLogs.forEach((log) => {
+      if (log.usage) {
+        totalPromptTokens += log.usage.promptTokens || 0;
+        totalCompletionTokens += log.usage.completionTokens || 0;
+        totalCachedTokens += log.usage.promptTokensDetails?.cachedTokens || 0;
+        totalCacheWriteTokens +=
+          log.usage.promptTokensDetails?.cacheWriteTokens || 0;
+        totalReasoningTokens +=
+          log.usage.completionTokensDetails?.reasoningTokens || 0;
+      }
+    });
+
+    // 如果沒有任何 token 使用量，返回 undefined
+    if (totalPromptTokens === 0 && totalCompletionTokens === 0) {
+      return undefined;
+    }
+
+    // 返回累計的 usage（符合 Usage 型別）
+    return {
+      promptTokens: totalPromptTokens,
+      completionTokens: totalCompletionTokens,
+      promptTokensDetails:
+        totalCachedTokens > 0 || totalCacheWriteTokens > 0
+          ? {
+              cachedTokens: totalCachedTokens,
+              cacheWriteTokens: totalCacheWriteTokens,
+            }
+          : undefined,
+      completionTokensDetails:
+        totalReasoningTokens > 0
+          ? { reasoningTokens: totalReasoningTokens }
+          : undefined,
+    };
   }, [item.promptLogs]);
 
   return (

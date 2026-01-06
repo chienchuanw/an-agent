@@ -126,7 +126,7 @@ describe("LanceDbVectorStore", () => {
     });
 
     it("should remove file from vector store", async () => {
-      await vectorStore.remove("/test/file.ts");
+      await vectorStore.delete("/test/file.ts");
 
       expect(mockTable.delete).toHaveBeenCalledWith(
         "filepath = '/test/file.ts'",
@@ -159,7 +159,7 @@ describe("LanceDbVectorStore", () => {
 
       expect(mockTable.search).toHaveBeenCalledWith(queryVector);
       expect(results).toHaveLength(1);
-      expect(results[0].filepath).toBe("/test/file.ts");
+      expect(results[0].chunk.filepath).toBe("/test/file.ts");
     });
   });
 });

@@ -1,5 +1,6 @@
 import { FolderIcon } from "@heroicons/react/24/outline";
-import { ToolCallState } from "core";
+import type { PromptLog, ToolCallState } from "core";
+import GroupTokenUsageDisplay from "../../../components/StepContainer/GroupTokenUsageDisplay";
 import { ToggleWithIcon } from "./ToggleWithIcon";
 import { getGroupActionVerb } from "./utils";
 
@@ -8,6 +9,7 @@ interface GroupedToolCallHeaderProps {
   activeCalls: ToolCallState[];
   open: boolean;
   onToggle: () => void;
+  promptLogs?: PromptLog[]; // 用於顯示 token 使用量
 }
 
 export function GroupedToolCallHeader({
@@ -15,6 +17,7 @@ export function GroupedToolCallHeader({
   activeCalls,
   open,
   onToggle,
+  promptLogs,
 }: GroupedToolCallHeaderProps) {
   return (
     <div className="mb-2">
@@ -29,8 +32,15 @@ export function GroupedToolCallHeader({
           open={open}
           onClick={onToggle}
         />
-        {getGroupActionVerb(toolCallStates)} {activeCalls.length}{" "}
-        {activeCalls.length === 1 ? "action" : "actions"}
+        <span>
+          {getGroupActionVerb(toolCallStates)} {activeCalls.length}{" "}
+          {activeCalls.length === 1 ? "action" : "actions"}
+          {/* 顯示該批次所有 actions 的累計 token 使用量 */}
+          <GroupTokenUsageDisplay
+            toolCallStates={toolCallStates}
+            promptLogs={promptLogs}
+          />
+        </span>
       </div>
     </div>
   );
