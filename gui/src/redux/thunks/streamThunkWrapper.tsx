@@ -1,9 +1,8 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import posthog from "posthog-js";
-import StreamErrorDialog from "../../pages/gui/StreamError";
 import { analyzeError } from "../../util/errorAnalysis";
 import { selectSelectedChatModel } from "../slices/configSlice";
-import { setDialogMessage, setShowDialog } from "../slices/uiSlice";
+import { setInlineErrorMessage } from "../slices/sessionSlice";
 import { ThunkApiType } from "../store";
 import { cancelStream } from "./cancelStream";
 import { saveCurrentSession } from "./session";
@@ -26,8 +25,6 @@ export const streamThunkWrapper = createAsyncThunk<
     }
   } catch (e) {
     await dispatch(cancelStream());
-    dispatch(setDialogMessage(<StreamErrorDialog error={e} />));
-    dispatch(setShowDialog(true));
 
     // Get the selected model from the state for error analysis
     const state = getState();
@@ -36,6 +33,15 @@ export const streamThunkWrapper = createAsyncThunk<
     const { parsedError, statusCode, modelTitle, providerName } = analyzeError(
       e,
       selectedModel,
+    );
+
+    // Set inline error message instead of showing modal dialog
+    dispatch(
+      setInlineErrorMessage({
+        type: "stream-error",
+        error: e,
+        parsedError,
+      }),
     );
 
     const errorData = {

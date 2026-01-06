@@ -78,7 +78,7 @@ beforeEach(() => {
 });
 
 describe("streamResponseThunk", () => {
-  it("should throw error when no chat model is selected", async () => {
+  it("should show inline error when no chat model is selected", async () => {
     const noModelState = getEmptyRootState();
     noModelState.session.history = [
       {
@@ -161,18 +161,14 @@ describe("streamResponseThunk", () => {
         payload: undefined,
       },
       {
-        type: "ui/setDialogMessage",
+        type: "session/setInlineErrorMessage",
         payload: expect.objectContaining({
-          props: expect.objectContaining({
-            error: expect.objectContaining({
-              message: "No chat model selected",
-            }),
+          type: "stream-error",
+          error: expect.objectContaining({
+            message: "No chat model selected",
           }),
+          parsedError: expect.any(String),
         }),
-      },
-      {
-        type: "ui/setShowDialog",
-        payload: true,
       },
       {
         type: "chat/streamWrapper/fulfilled",
@@ -201,7 +197,7 @@ describe("streamResponseThunk", () => {
     expect(requestSpy).not.toHaveBeenCalled();
     expect(chatSpy).not.toHaveBeenCalled();
 
-    // Verify final state shows error dialog and inactive streaming
+    // Verify final state shows inline error and inactive streaming
     const finalState = mockStoreNoModel.getState();
     expect(finalState).toEqual({
       ...noModelState,
@@ -211,17 +207,16 @@ describe("streamResponseThunk", () => {
         history: [
           { ...noModelState.session.history[0], isGatheringContext: false },
         ],
+        inlineErrorMessage: expect.objectContaining({
+          type: "stream-error",
+          error: expect.objectContaining({
+            message: "No chat model selected",
+          }),
+          parsedError: expect.any(String),
+        }),
       },
       ui: {
         ...noModelState.ui,
-        showDialog: true, // Error dialog is shown
-        dialogMessage: expect.objectContaining({
-          props: expect.objectContaining({
-            error: expect.objectContaining({
-              message: "No chat model selected",
-            }),
-          }),
-        }),
       },
     });
   });
@@ -569,7 +564,7 @@ describe("streamResponseThunk", () => {
     });
   });
 
-  it("should throw error for other compilation errors", async () => {
+  it("should show inline error for other compilation errors", async () => {
     const initialState = getRootStateWithClaude();
     initialState.session.history = [
       {
@@ -603,10 +598,10 @@ describe("streamResponseThunk", () => {
       }) as any,
     );
 
-    // Verify thunk completed successfully but shows error dialog
+    // Verify thunk completed successfully but shows inline error
     expect(result.type).toBe("chat/streamResponse/fulfilled");
 
-    // Verify exact action sequence for compilation error with dialog
+    // Verify exact action sequence for compilation error with inline error
     const dispatchedActions = mockStore.getActions();
     expect(dispatchedActions).toEqual([
       {
@@ -749,18 +744,14 @@ describe("streamResponseThunk", () => {
         payload: undefined,
       },
       {
-        type: "ui/setDialogMessage",
+        type: "session/setInlineErrorMessage",
         payload: expect.objectContaining({
-          props: expect.objectContaining({
-            error: expect.objectContaining({
-              message: "Model configuration is invalid",
-            }),
+          type: "stream-error",
+          error: expect.objectContaining({
+            message: "Model configuration is invalid",
           }),
+          parsedError: expect.any(String),
         }),
-      },
-      {
-        type: "ui/setShowDialog",
-        payload: true,
       },
       {
         type: "chat/streamWrapper/fulfilled",
@@ -815,7 +806,7 @@ describe("streamResponseThunk", () => {
     });
     expect(chatSpy).not.toHaveBeenCalled();
 
-    // Verify final state shows error dialog and inactive streaming
+    // Verify final state shows inline error and inactive streaming
     const finalState = mockStore.getState();
     expect(finalState).toEqual({
       ...initialState,
@@ -823,17 +814,16 @@ describe("streamResponseThunk", () => {
         ...initialState.session,
         streamAborter: expect.any(AbortController),
         mainEditorContentTrigger: mockEditorState, // Editor content that triggered the request
+        inlineErrorMessage: expect.objectContaining({
+          type: "stream-error",
+          error: expect.objectContaining({
+            message: "Model configuration is invalid",
+          }),
+          parsedError: expect.any(String),
+        }),
       },
       ui: {
         ...initialState.ui,
-        showDialog: true, // Error dialog is shown
-        dialogMessage: expect.objectContaining({
-          props: expect.objectContaining({
-            error: expect.objectContaining({
-              message: "Model configuration is invalid",
-            }),
-          }),
-        }),
       },
     });
   });
