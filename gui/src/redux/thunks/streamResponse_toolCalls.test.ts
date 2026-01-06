@@ -1587,7 +1587,7 @@ describe("streamResponseThunk - tool calls", () => {
       {
         type: "chat/streamNormalInput/pending",
         meta: {
-          arg: { depth: 2 },
+          arg: { depth: 2, actionId: "tool-approval-flow-1" },
           requestId: expect.any(String),
           requestStatus: "pending",
         },
@@ -1645,7 +1645,7 @@ describe("streamResponseThunk - tool calls", () => {
       {
         type: "chat/streamNormalInput/fulfilled",
         meta: {
-          arg: { depth: 2 },
+          arg: { depth: 2, actionId: "tool-approval-flow-1" },
           requestId: expect.any(String),
           requestStatus: "fulfilled",
         },
